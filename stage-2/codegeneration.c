@@ -31,20 +31,17 @@ int codeGen(tnode *t, FILE *target_file) {
 
     switch (t->nodetype) {
 
-        /* ---------- NUM ---------- */
         case NODE_NUM:
             r1 = getReg();
             fprintf(target_file, "MOV R%d, %d\n", r1, t->val);
             return r1;
 
-        /* ---------- ID ---------- */
         case NODE_ID:
             r1 = getReg();
             fprintf(target_file, "MOV R%d, [%d]\n",
                     r1, getAddress(t->varname[0]));
             return r1;
 
-        /* ---------- ARITHMETIC ---------- */
         case NODE_PLUS:
             r1 = codeGen(t->left, target_file);
             r2 = codeGen(t->right, target_file);
@@ -73,7 +70,6 @@ int codeGen(tnode *t, FILE *target_file) {
             freeReg();
             return r1;
 
-        /* ---------- ASSIGN ---------- */
         case NODE_ASSIGN:
             r1 = codeGen(t->right, target_file);   // RHS expression
             fprintf(target_file, "MOV [%d], R%d\n",
@@ -81,7 +77,6 @@ int codeGen(tnode *t, FILE *target_file) {
             freeReg();
             return -1;
 
-        /* ---------- READ ---------- */
         case NODE_READ:
             r1 = getReg();
             fprintf(target_file, "MOV R%d, \"Read\"\n",r1);
@@ -98,7 +93,6 @@ int codeGen(tnode *t, FILE *target_file) {
                     "POP R0\nPOP R0\nPOP R0\nPOP R0\nPOP R0\n");
             return -1;
 
-        /* ---------- WRITE ---------- */
         case NODE_WRITE:
             r1 = codeGen(t->left, target_file);
             r2 = getReg();
@@ -115,7 +109,6 @@ int codeGen(tnode *t, FILE *target_file) {
             freeReg();
             return -1;
 
-        /* ---------- CONNECTOR ---------- */
         case NODE_CONNECTOR:
             codeGen(t->left, target_file);
             codeGen(t->right, target_file);

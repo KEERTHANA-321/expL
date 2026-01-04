@@ -4,11 +4,11 @@
 #include <stdio.h>
 #include "tree.h"
 
-void fileinit(FILE *target_file); // to place the header
+void fileinit(FILE *target_file); // to place the header and the replacement of stack pointer
 void emitExit(FILE *target_file); // to place exit instructions
-// Generate code for an expression tree
+
+// Generate code for an AST and
 // Writes instructions to the target file and
-// returns the register index holding the result
 int codeGen(tnode *root, FILE *target_file);
 
 #endif
