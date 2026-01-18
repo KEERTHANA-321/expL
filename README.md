@@ -1,1 +1,2 @@
-# EXPL_NITC
+# expL
+Compiler lab project NITC
