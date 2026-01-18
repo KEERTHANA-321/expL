@@ -1,0 +1,340 @@
+# ExpL Compiler Makefile for Automated Testing
+# Location: root-dir/TESTING/Makefile
+# Usage: cd TESTING && make test
+
+ROOT_DIR := $(shell cd .. && pwd)
+STAGE_1_COMPILER := $(ROOT_DIR)/stage-1/stage-final
+STAGE_2_COMPILER := $(ROOT_DIR)/stage-2/stage-final
+STAGE_3_COMPILER := $(ROOT_DIR)/stage-3/stage-final
+STAGE_4_COMPILER := $(ROOT_DIR)/stage-4/stage-final
+
+XSM_SIMULATOR := $(ROOT_DIR)/xsm
+LIBRARY_LIB := $(ROOT_DIR)/library.lib
+
+# Test directories
+TEST_DIR := .
+INPUT_DIR := $(TEST_DIR)/input
+OUTPUT_DIR := $(TEST_DIR)/output
+EXPECTED_DIR := $(TEST_DIR)/expected_output
+
+# Create output directory if it doesn't exist
+$(shell mkdir -p $(OUTPUT_DIR))
+
+# ==========================================
+# PHONY TARGETS
+# ==========================================
+.PHONY: test test-stage-1 test-stage-2 test-stage-3 test-stage-4 clean help
+
+# ==========================================
+# DEFAULT TARGET
+# ==========================================
+help:
+	@echo "=========================================="
+	@echo "ExpL Compiler Testing Makefile"
+	@echo "=========================================="
+	@echo ""
+	@echo "Usage:"
+	@echo "  make test              - Run all tests (all stages)"
+	@echo "  make test-stage-1      - Run only Stage 1 tests"
+	@echo "  make test-stage-2      - Run only Stage 2 tests"
+	@echo "  make test-stage-3      - Run only Stage 3 tests"
+	@echo "  make test-stage-4      - Run only Stage 4 tests"
+	@echo "  make clean             - Remove all output files"
+	@echo "  make help              - Show this message"
+	@echo ""
+	@echo "Test Structure:"
+	@echo "  Input files:    input/stage-X-case-N-*.txt"
+	@echo "  Expected out:   expected_output/stage-X-case-N-*.txt"
+	@echo "  Expected err:   expected_output/stage-X-case-N-*.err"
+	@echo "  Actual output:  output/stage-X-case-N-*.txt"
+	@echo ""
+
+# ==========================================
+# MASTER TEST TARGET (ALL STAGES)
+# ==========================================
+test: test-stage-1 test-stage-2 test-stage-3 test-stage-4
+	@echo ""
+	@echo "=========================================="
+	@echo "ALL STAGES TESTING COMPLETE"
+	@echo "=========================================="
+
+# ==========================================
+# STAGE 1 TESTS: Expression Evaluation
+# ==========================================
+test-stage-1:
+	@echo ""
+	@echo "=========================================="
+	@echo "STAGE 1: Expression Evaluation"
+	@echo "=========================================="
+	@pass=0; fail=0; total=0; \
+	for test_input in $(INPUT_DIR)/stage-1-case-*-compilation.txt; do \
+		if [ ! -f "$$test_input" ]; then continue; fi; \
+		test_name=$$(basename $$test_input -compilation.txt); \
+		exp_output=$(EXPECTED_DIR)/$${test_name}-xsm.txt; \
+		act_output=$(OUTPUT_DIR)/$${test_name}-xsm.txt; \
+		exp_error=$(EXPECTED_DIR)/$${test_name}.err; \
+		total=$$((total+1)); \
+		printf "Test: $$test_name"; \
+		\
+		comp_out=$$(mktemp); \
+		$(STAGE_1_COMPILER) < $$test_input > $$comp_out 2>&1; \
+		comp_status=$$?; \
+		\
+		if [ -f $$exp_error ]; then \
+			grep "^\[ERROR\]" $$comp_out > $$comp_out.err 2>&1; \
+			if [ $$comp_status -ne 0 ] && diff -w -B $$comp_out.err $$exp_error > /dev/null 2>&1; then \
+				printf " \033[0;32m[PASS - EXPECTED ERROR]\033[0m\n"; \
+				pass=$$((pass+1)); \
+			else \
+				printf " \033[0;31m[FAIL - ERROR MISMATCH]\033[0m\n"; \
+				fail=$$((fail+1)); \
+			fi; \
+			rm -f $$comp_out $$comp_out.err; \
+			continue; \
+		fi; \
+		\
+		if [ $$comp_status -ne 0 ]; then \
+			printf " \033[0;31m[FAIL - COMPILATION ERROR]\033[0m\n"; \
+			cat $$comp_out; \
+			fail=$$((fail+1)); \
+			rm -f $$comp_out; \
+			continue; \
+		fi; \
+		\
+		cp $$comp_out $(OUTPUT_DIR)/$${test_name}-xsm.txt; \
+		rm -f $$comp_out; \
+		\
+		if [ ! -f $$exp_output ]; then \
+			printf " \033[0;33m[SKIP - NO EXPECTED OUTPUT]\033[0m\n"; \
+			continue; \
+		fi; \
+		\
+		if diff -w -B $(OUTPUT_DIR)/$${test_name}-xsm.txt $$exp_output > /dev/null 2>&1; then \
+			printf " \033[0;32m[PASS]\033[0m\n"; \
+			pass=$$((pass+1)); \
+		else \
+			printf " \033[0;31m[FAIL - OUTPUT MISMATCH]\033[0m\n"; \
+			fail=$$((fail+1)); \
+		fi; \
+	done; \
+	echo "-------------------------------------------"; \
+	printf "Stage 1 Results: TOTAL=$$total PASS=\033[0;32m$$pass\033[0m FAIL=\033[0;31m$$fail\033[0m\n"
+
+# ==========================================
+# STAGE 2 TESTS: Variables & I/O
+# ==========================================
+test-stage-2:
+	@echo ""
+	@echo "=========================================="
+	@echo "STAGE 2: Variables & I/O"
+	@echo "=========================================="
+	@pass=0; fail=0; total=0; \
+	for test_input in $(INPUT_DIR)/stage-2-case-*-compilation.txt; do \
+		if [ ! -f "$$test_input" ]; then continue; fi; \
+		test_name=$$(basename $$test_input -compilation.txt); \
+		test_input_data=$(INPUT_DIR)/$${test_name}-input.txt; \
+		exp_output=$(EXPECTED_DIR)/$${test_name}-xsm.txt; \
+		act_output=$(OUTPUT_DIR)/$${test_name}-xsm.txt; \
+		exp_error=$(EXPECTED_DIR)/$${test_name}.err; \
+		total=$$((total+1)); \
+		printf "Test: $$test_name"; \
+		\
+		comp_out=$$(mktemp); \
+		$(STAGE_2_COMPILER) < $$test_input > $$comp_out 2>&1; \
+		comp_status=$$?; \
+		\
+		if [ -f $$exp_error ]; then \
+			grep "^\[ERROR\]" $$comp_out > $$comp_out.err 2>&1; \
+			if [ $$comp_status -ne 0 ] && diff -w -B $$comp_out.err $$exp_error > /dev/null 2>&1; then \
+				printf " \033[0;32m[PASS - EXPECTED ERROR]\033[0m\n"; \
+				pass=$$((pass+1)); \
+			else \
+				printf " \033[0;31m[FAIL - ERROR MISMATCH]\033[0m\n"; \
+				fail=$$((fail+1)); \
+			fi; \
+			rm -f $$comp_out $$comp_out.err; \
+			continue; \
+		fi; \
+		\
+		if [ $$comp_status -ne 0 ]; then \
+			printf " \033[0;31m[FAIL - COMPILATION ERROR]\033[0m\n"; \
+			cat $$comp_out; \
+			fail=$$((fail+1)); \
+			rm -f $$comp_out; \
+			continue; \
+		fi; \
+		\
+		cp $$comp_out $(OUTPUT_DIR)/$${test_name}-xsm.txt; \
+		rm -f $$comp_out; \
+		\
+		if [ ! -f $$exp_output ]; then \
+			printf " \033[0;33m[SKIP - NO EXPECTED OUTPUT]\033[0m\n"; \
+			continue; \
+		fi; \
+		\
+		if [ -f $$test_input_data ]; then \
+			(cd $(ROOT_DIR) && bash $(XSM_SIMULATOR) -l $(LIBRARY_LIB) -e $(OUTPUT_DIR)/$${test_name}-xsm.txt < $$test_input_data > $(OUTPUT_DIR)/$${test_name}-runtime.txt 2>&1); \
+		else \
+			(cd $(ROOT_DIR) && bash $(XSM_SIMULATOR) -l $(LIBRARY_LIB) -e $(OUTPUT_DIR)/$${test_name}-xsm.txt > $(OUTPUT_DIR)/$${test_name}-runtime.txt 2>&1); \
+		fi; \
+		\
+		if diff -w -B $(OUTPUT_DIR)/$${test_name}-runtime.txt $$exp_output > /dev/null 2>&1; then \
+			printf " \033[0;32m[PASS]\033[0m\n"; \
+			pass=$$((pass+1)); \
+		else \
+			printf " \033[0;31m[FAIL - OUTPUT MISMATCH]\033[0m\n"; \
+			fail=$$((fail+1)); \
+		fi; \
+	done; \
+	echo "-------------------------------------------"; \
+	printf "Stage 2 Results: TOTAL=$$total PASS=\033[0;32m$$pass\033[0m FAIL=\033[0;31m$$fail\033[0m\n"
+
+# ==========================================
+# STAGE 3 TESTS: Control Flow
+# ==========================================
+test-stage-3:
+	@echo ""
+	@echo "=========================================="
+	@echo "STAGE 3: Control Flow (IF/WHILE)"
+	@echo "=========================================="
+	@pass=0; fail=0; total=0; \
+	for test_input in $(INPUT_DIR)/stage-3-case-*-compilation.txt; do \
+		if [ ! -f "$$test_input" ]; then continue; fi; \
+		test_name=$$(basename $$test_input -compilation.txt); \
+		test_input_data=$(INPUT_DIR)/$${test_name}-input.txt; \
+		exp_output=$(EXPECTED_DIR)/$${test_name}-xsm.txt; \
+		act_output=$(OUTPUT_DIR)/$${test_name}-xsm.txt; \
+		exp_error=$(EXPECTED_DIR)/$${test_name}.err; \
+		total=$$((total+1)); \
+		printf "Test: $$test_name"; \
+		\
+		comp_out=$$(mktemp); \
+		$(STAGE_3_COMPILER) < $$test_input > $$comp_out 2>&1; \
+		comp_status=$$?; \
+		\
+		if [ -f $$exp_error ]; then \
+			grep "^\[ERROR\]" $$comp_out > $$comp_out.err 2>&1; \
+			if [ $$comp_status -ne 0 ] && diff -w -B $$comp_out.err $$exp_error > /dev/null 2>&1; then \
+				printf " \033[0;32m[PASS - EXPECTED ERROR]\033[0m\n"; \
+				pass=$$((pass+1)); \
+			else \
+				printf " \033[0;31m[FAIL - ERROR MISMATCH]\033[0m\n"; \
+				fail=$$((fail+1)); \
+			fi; \
+			rm -f $$comp_out $$comp_out.err; \
+			continue; \
+		fi; \
+		\
+		if [ $$comp_status -ne 0 ]; then \
+			printf " \033[0;31m[FAIL - COMPILATION ERROR]\033[0m\n"; \
+			cat $$comp_out; \
+			fail=$$((fail+1)); \
+			rm -f $$comp_out; \
+			continue; \
+		fi; \
+		\
+		cp $$comp_out $(OUTPUT_DIR)/$${test_name}-xsm.txt; \
+		rm -f $$comp_out; \
+		\
+		if [ ! -f $$exp_output ]; then \
+			printf " \033[0;33m[SKIP - NO EXPECTED OUTPUT]\033[0m\n"; \
+			continue; \
+		fi; \
+		\
+		if [ -f $$test_input_data ]; then \
+			(cd $(ROOT_DIR) && bash $(XSM_SIMULATOR) -l $(LIBRARY_LIB) -e $(OUTPUT_DIR)/$${test_name}-xsm.txt < $$test_input_data > $(OUTPUT_DIR)/$${test_name}-runtime.txt 2>&1); \
+		else \
+			(cd $(ROOT_DIR) && bash $(XSM_SIMULATOR) -l $(LIBRARY_LIB) -e $(OUTPUT_DIR)/$${test_name}-xsm.txt > $(OUTPUT_DIR)/$${test_name}-runtime.txt 2>&1); \
+		fi; \
+		\
+		if diff -w -B $(OUTPUT_DIR)/$${test_name}-runtime.txt $$exp_output > /dev/null 2>&1; then \
+			printf " \033[0;32m[PASS]\033[0m\n"; \
+			pass=$$((pass+1)); \
+		else \
+			printf " \033[0;31m[FAIL - OUTPUT MISMATCH]\033[0m\n"; \
+			fail=$$((fail+1)); \
+		fi; \
+	done; \
+	echo "-------------------------------------------"; \
+	printf "Stage 3 Results: TOTAL=$$total PASS=\033[0;32m$$pass\033[0m FAIL=\033[0;31m$$fail\033[0m\n"
+
+# ==========================================
+# STAGE 4 TESTS: Symbol Table & Type Checking
+# ==========================================
+test-stage-4:
+	@echo ""
+	@echo "=========================================="
+	@echo "STAGE 4: Symbol Table & Type Checking"
+	@echo "=========================================="
+	@pass=0; fail=0; total=0; \
+	for test_input in $(INPUT_DIR)/stage-4-case-*-compilation.txt; do \
+		if [ ! -f "$$test_input" ]; then continue; fi; \
+		test_name=$$(basename $$test_input -compilation.txt); \
+		test_input_data=$(INPUT_DIR)/$${test_name}-input.txt; \
+		exp_output=$(EXPECTED_DIR)/$${test_name}-xsm.txt; \
+		act_output=$(OUTPUT_DIR)/$${test_name}-xsm.txt; \
+		exp_error=$(EXPECTED_DIR)/$${test_name}.err; \
+		exp_symboltable=$(EXPECTED_DIR)/$${test_name}-symboltable.txt; \
+		total=$$((total+1)); \
+		printf "Test: $$test_name"; \
+		\
+		comp_out=$$(mktemp); \
+		$(STAGE_4_COMPILER) < $$test_input > $$comp_out 2>&1; \
+		comp_status=$$?; \
+		\
+		if [ -f $$exp_error ]; then \
+			grep "^\[ERROR\]" $$comp_out > $$comp_out.err 2>&1; \
+			if [ $$comp_status -ne 0 ] && diff -w -B $$comp_out.err $$exp_error > /dev/null 2>&1; then \
+				printf " \033[0;32m[PASS - EXPECTED ERROR]\033[0m\n"; \
+				pass=$$((pass+1)); \
+			else \
+				printf " \033[0;31m[FAIL - ERROR MISMATCH]\033[0m\n"; \
+				fail=$$((fail+1)); \
+			fi; \
+			rm -f $$comp_out $$comp_out.err; \
+			continue; \
+		fi; \
+		\
+		if [ $$comp_status -ne 0 ]; then \
+			printf " \033[0;31m[FAIL - COMPILATION ERROR]\033[0m\n"; \
+			cat $$comp_out; \
+			fail=$$((fail+1)); \
+			rm -f $$comp_out; \
+			continue; \
+		fi; \
+		\
+		cp $$comp_out $(OUTPUT_DIR)/$${test_name}-xsm.txt; \
+		rm -f $$comp_out; \
+		\
+		if [ -f $$test_input_data ]; then \
+			(cd $(ROOT_DIR) && bash $(XSM_SIMULATOR) -l $(LIBRARY_LIB) -e $(OUTPUT_DIR)/$${test_name}-xsm.txt < $$test_input_data > $(OUTPUT_DIR)/$${test_name}-runtime.txt 2>&1); \
+		else \
+			(cd $(ROOT_DIR) && bash $(XSM_SIMULATOR) -l $(LIBRARY_LIB) -e $(OUTPUT_DIR)/$${test_name}-xsm.txt > $(OUTPUT_DIR)/$${test_name}-runtime.txt 2>&1); \
+		fi; \
+		\
+		if [ ! -f $$exp_output ]; then \
+			printf " \033[0;33m[SKIP - NO EXPECTED OUTPUT]\033[0m\n"; \
+			continue; \
+		fi; \
+		\
+		if diff -w -B $(OUTPUT_DIR)/$${test_name}-runtime.txt $$exp_output > /dev/null 2>&1; then \
+			printf " \033[0;32m[PASS]\033[0m\n"; \
+			pass=$$((pass+1)); \
+		else \
+			printf " \033[0;31m[FAIL - OUTPUT MISMATCH]\033[0m\n"; \
+			fail=$$((fail+1)); \
+		fi; \
+	done; \
+	echo "-------------------------------------------"; \
+	printf "Stage 4 Results: TOTAL=$$total PASS=\033[0;32m$$pass\033[0m FAIL=\033[0;31m$$fail\033[0m\n"
+
+# ==========================================
+# CLEANUP
+# ==========================================
+clean:
+	@echo "Cleaning up output files..."
+	@rm -f $(OUTPUT_DIR)/*.txt
+	@rm -f $(OUTPUT_DIR)/*.xsm
+	@echo "Cleanup complete!"
+
+.PHONY: test test-stage-1 test-stage-2 test-stage-3 test-stage-4 clean help
