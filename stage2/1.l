@@ -3,33 +3,36 @@
     #include <stdlib.h>
     #include "nodestructure.h"
     #include "y.tab.h"
+    #include "constants.h"
 
     int number;
-    char *id;
+    char *variable;
 %}
 
 %%
 
 [0-9]+ {
     number = atoi(yytext);
-    yylval.node = makeLeafNode(number);
+    yylval.node = createTree(1,number,NUM_NODE,NULL,NULL,NULL);
     return NUM;
 }
-"begin" {return BEGIN;}
+"begin" {return KW_BEGIN;}
 "read" {return READ;};
 "write" {return WRITE;}
 "end" {return END;}
-[a-z]+ {id=*yytext;
-        yylval.node=makeIdNode(id);
+[a-z]+ {variable = (char*)malloc(sizeof(yytext));
+        strcpy(variable, yytext);
+        yylval.node=createTree(1,0,VARIABLE_NODE,variable,NULL,NULL);
         return ID;} 
 "+" {return PLUS;}
 "-" {return MINUS;}
 "*" {return MUL;}
 "/" {return DIV;}
+";" {return SEMI;}
+"=" {return ASSIGN;}
 
 [\t ] {}
 [()] {return yytext[0];}
-[\n] {return END;}
 . {printf("unknown character %s\n", yytext); exit(1);}
 
 %%

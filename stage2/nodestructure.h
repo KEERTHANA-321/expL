@@ -1,3 +1,6 @@
+#ifndef NODESTRUCTURE_H
+#define NODESTRUCTURE_H
+
 typedef struct tnode { 
 	int val;	// value of a number for NUM nodes.
 	int type;	//type of variable
@@ -7,4 +10,13 @@ typedef struct tnode {
 }tnode;
 
 /*Create a node tnode*/
-struct tnode* createTree(int val, int type, char* c, struct tnode *l, struct tnode *r);
+struct tnode* createTree(int type, int val, int nodetype, char* name, struct tnode *l, struct tnode *r);// struct tnode* createNode();
+// struct tnode* makeNumNode(int val,int type);
+// struct tnode* makeIdNode(char * c,int type);
+// struct tnode* makeArithopNode(char c,struct tnode *l,struct tnode *r);
+// struct tnode* makeAssignNode(struct tnode* l,struct tnode* r);
+// struct tnode* makeConnectorNode(struct tnode* l,struct tnode* r);
+// struct tnode* makeReadNode(struct tnode* n);
+// struct tnode* makeWriteNode(struct tnode* );
+
+#endif

@@ -3,51 +3,63 @@
     #include <stdlib.h>
     #include "nodestructure.h"
     #include "nodestructure.c"
+    #include "constants.h"
+    #include "codegen.c"
 
     int yylex(void);
     void yyerror(char const *msg);
+    extern FILE *yyin;
+    FILE *out;
 %}
 
 %union {
     struct tnode *node;
 }
 
-%type <node> expr NUM program END
-%token NUM PLUS MINUS MUL DIV END
+%token KW_BEGIN END READ WRITE PLUS MINUS MUL DIV ASSGN NUM ID SEMI ASSIGN
 %left PLUS MINUS
 %left MUL DIV
 
+%type <node> NUM ID KW_BEGIN END READ WRITE PLUS MINUS MUL DIV ASSGN
+%type <node> program Slist Stmt InputStmt OutputStmt AsgStmt expr SEMI
+
 %%
 
-program : BEGIN Slist END {
-    $$ = $2;
-    printf("Answer: %d\n", evaluate($1));
+program : KW_BEGIN Slist END SEMI {
+    $$ = $2; 
+    print($2);
+    print_inorder($2);
+    printf("Finished\n"); 
+    initialize();
+    codegen($2); 
+    generateExitCode();
+    fclose(out);  
     exit(0);}
-    | BEGIN END
+    | KW_BEGIN END SEMI { $$=$2;}
     ;
 
-Slist : Slist Stmt 
-    | Stmt
+Slist : Slist Stmt {$$=createTree(1,0,CONNECTOR_NODE,NULL,$1,$2);}
+    | Stmt {$$=$1;} 
     ;
 
-Stmt : InputStmt 
-    | OutputStmt
-    | AsgStmt
+Stmt : InputStmt  {$$=$1;}
+    | OutputStmt {$$=$1;}
+    | AsgStmt {$$=$1;}
     ;
-InputStmt : READ '(' ID ')' ';'
+InputStmt : READ '(' ID ')' SEMI {$$=createTree(1,0,READ_NODE,NULL,$3,NULL);}
             ;
-OutputStmt : WRITE '(' E ')' ';'
+OutputStmt : WRITE '(' expr ')' SEMI {$$=createTree(1,0,WRITE_NODE,NULL,$3,NULL);}
             ;
-AsgStmt : ID '=' E ';'
+AsgStmt : ID ASSIGN expr SEMI {$$=createTree(1,0,ASSIGN_NODE,NULL,$1,$3);}
         ;
 
-expr : expr PLUS expr { $$ = makeOperatorNode('+', $1, $3); }
-    | expr MINUS expr { $$ = makeOperatorNode('-', $1, $3); }
-    | expr MUL expr { $$ = makeOperatorNode('*', $1, $3); }
-    | expr DIV expr { $$ = makeOperatorNode('/', $1, $3); }
+expr : expr PLUS expr { $$ = createTree(1,0,ADD_NODE,NULL, $1, $3); }
+    | expr MINUS expr { $$ = createTree(1,0,SUB_NODE,NULL, $1, $3); }
+    | expr MUL expr { $$ = createTree(1,0,MUL_NODE,NULL, $1, $3); }
+    | expr DIV expr { $$ = createTree(1,0,DIV_NODE,NULL,$1,$3);}
     | '(' expr ')' { $$ = $2; }
     | NUM { $$ = $1; }
-    | ID {$$=makeIdNode($1,)}
+    | ID { $$=$1; }
     ;
 
 %%
@@ -58,5 +70,7 @@ void yyerror(char const *msg) {
 }
 
 int main() {
+    FILE *source_file = fopen(SOURCE_FILE, "r");
+    yyin = source_file;
     return yyparse();
 }
