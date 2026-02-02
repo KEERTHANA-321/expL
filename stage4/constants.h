@@ -24,6 +24,7 @@ enum nodeTypes {
     CONNECTOR_NODE,
     VARIABLE_NODE,
     STRVAL_NODE,
+    ARRAY_NODE,
     NUM_NODE,
     READ_NODE,
     WRITE_NODE,

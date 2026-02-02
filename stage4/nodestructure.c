@@ -66,6 +66,8 @@ void printNode(struct tnode *node) {
         case STRVAL_NODE:
             printf("%s\n",node->varname);
             break;
+        case ARRAY_NODE:
+            printf("ARRAY\n");
 
         case ADD_NODE:
             printf("+\n");

@@ -89,7 +89,9 @@ extern int yydebug;
     T_INT = 290,                   /* T_INT  */
     T_STR = 291,                   /* T_STR  */
     COMMA = 292,                   /* COMMA  */
-    ASSGN = 293                    /* ASSGN  */
+    LBRACK = 293,                  /* LBRACK  */
+    RBRACK = 294,                  /* RBRACK  */
+    ASSGN = 295                    /* ASSGN  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -133,7 +135,9 @@ extern int yydebug;
 #define T_INT 290
 #define T_STR 291
 #define COMMA 292
-#define ASSGN 293
+#define LBRACK 293
+#define RBRACK 294
+#define ASSGN 295
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -143,7 +147,7 @@ union YYSTYPE
 
     struct tnode *node;
 
-#line 147 "y.tab.h"
+#line 151 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

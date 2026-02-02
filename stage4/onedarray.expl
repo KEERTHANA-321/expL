@@ -1,0 +1,7 @@
+decl
+    int a[10],b;
+enddecl
+begin
+    a=0;
+    
+end;

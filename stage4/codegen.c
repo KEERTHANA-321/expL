@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "constants.h"
 #include "nodestructure.h"
+#include "symbolTable.h"
 
 extern FILE * out;
 
@@ -38,6 +39,8 @@ void generateExitCode() {
     fprintf(out, "PUSH R%d\n", reg);
     fprintf(out, "PUSH R%d\n", reg);
     fprintf(out, "PUSH R%d\n", reg);
+
+    
     fprintf(out, "CALL 0\n");
 
     freeReg();
@@ -46,7 +49,28 @@ void initialize(){
     out=fopen("result.xsm","w");
     fprintf(out, "0\n2056\n0\n0\n0\n0\n0\n0\n");
     fprintf(out, "ADD SP, 26\n");
-    fprintf(out,"BRKP\n");
+}
+
+int getMemoryAddress(struct tnode* root) {
+    int r;
+    if(root->nodetype == VARIABLE_NODE) {
+        r = getReg();
+        if(r == 0) r = getReg();
+        fprintf(out, "MOV R%d, %d\n", r, root->Gentry->binding);
+        return r;
+    } else if(root->nodetype == ARRAY_NODE) {
+        if(root->right == NULL) {
+            r = getReg();
+            if(r == 0) r = getReg();
+            fprintf(out, "MOV R%d, 0\n", r);  // or base offset
+        } else {
+            r = codegen(root->right);
+        }
+        fprintf(out, "ADD R%d, %d\n", r, root->left->Gentry->binding);
+        return r;
+    } else {
+        return -1;
+    }
 }
 int codegen(struct tnode* root){
     int r1,r2,r3,number,status=0;
@@ -66,14 +90,17 @@ int codegen(struct tnode* root){
             return r1;
         }
         case VARIABLE_NODE:{
-            r1=getReg();
-            number=4096+root->varname[0]-'a';
-            fprintf(out,"MOV R%d,[%d]\n",r1,number);
+            r1=getMemoryAddress(root);
+            fprintf(out,"MOV R%d,[R%d]\n",r1,r1);
             return r1;
         }
         case STRVAL_NODE:
             r1 = getReg();
             fprintf(out, "MOV R%d,%s\n", r1, root->varname);
+            return r1;
+        case ARRAY_NODE:
+            r1 = getMemoryAddress(root);
+            fprintf(out, "MOV R%d, [R%d]\n", r1, r1);
             return r1;
         case ADD_NODE:{
             r1 = codegen(root->left);
@@ -105,8 +132,9 @@ int codegen(struct tnode* root){
         }
         case ASSIGN_NODE:{
             r1=codegen(root->right);
-            number = 4096 + root->left->varname[0] - 'a';
-            fprintf(out,"MOV [%d],R%d\n",number,r1);
+            r2=getMemoryAddress(root->left);
+            fprintf(out,"MOV [R%d],R%d\n",r2,r1);
+            freeReg();
             freeReg();
             return r1;
         }
@@ -132,27 +160,41 @@ int codegen(struct tnode* root){
             counter = status;
             break;
         }
-        case READ_NODE:{
-            number = 4096 + root->left->varname[0] - 'a';
+        case READ_NODE: {
+            int addr = getMemoryAddress(root->left);
+
+            // Save registers
             for (i = 0; i <= counter; i++)
                 fprintf(out, "PUSH R%d\n", i);
             status = counter;
 
             fprintf(out, "MOV R0,\"Read\"\n");
-            fprintf(out, "PUSH R0\n"); 
-            fprintf(out, "MOV R0,-1\n");
-            fprintf(out, "PUSH R0\n"); 
-            fprintf(out, "MOV R0,%d\n", number);
             fprintf(out, "PUSH R0\n");
-            fprintf(out, "ADD SP,2\n");
-            fprintf(out, "CALL 0\n");
-            fprintf(out, "SUB SP,5\n");
 
+            fprintf(out, "MOV R0,-1\n");
+            fprintf(out, "PUSH R0\n");
+
+            fprintf(out, "PUSH R%d\n", addr);
+
+            fprintf(out, "MOV R0,-1\n");
+            fprintf(out, "PUSH R0\n");
+            fprintf(out, "PUSH R0\n");
+
+            fprintf(out, "CALL 0\n");
+
+            // Pop syscall args
+            for (i = 0; i < 5; i++)
+                fprintf(out, "POP R0\n");
+
+            // Restore registers
             for (i = status; i >= 0; i--)
                 fprintf(out, "POP R%d\n", i);
+
+            freeReg();
             counter = status;
             break;
         }
+
          case LT_NODE:
             r1 = codegen(root->left);
             r2 = codegen(root->right);

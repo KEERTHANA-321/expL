@@ -56,6 +56,8 @@
 "/" {return DIV;}
 ";" {return SEMI;}
 "=" {return ASSIGN;}
+"[" {return LBRACK;}
+"]" {return RBRACK;}
 
 [\t ] {}
 [()] {return yytext[0];}

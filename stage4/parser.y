@@ -19,7 +19,7 @@
 
 %token KW_BEGIN END READ WRITE PLUS MINUS MUL DIV NUM ID SEMI ASSIGN STRVAL
 %token LE LT GE GT NE EQ IF WHILE ENDWHILE ENDIF DO THEN ELSE
-%token BREAK CONT REPEAT UNTIL DECL ENDDECL T_INT T_STR COMMA
+%token BREAK CONT REPEAT UNTIL DECL ENDDECL T_INT T_STR COMMA LBRACK RBRACK
 %left PLUS MINUS
 %left MUL DIV
 %right ASSGN
@@ -62,6 +62,8 @@ Type : T_INT {declaration_type=INT;}
 
 VarList : VarList COMMA ID {install($3->varname, declaration_type, 1);}
         | ID {install($1->varname,declaration_type,1);}
+        | VarList COMMA ID LBRACK NUM RBRACK {install($3->varname,declaration_type,$5->val);}
+        | ID LBRACK NUM RBRACK {install($1->varname,declaration_type,$3->val);}
         ;
 
 Slist : Slist Stmt {$$=createTree(1,0,CONNECTOR_NODE,NULL,$1,$2,NULL);}
@@ -167,7 +169,29 @@ id: ID {
     }
     $1->type=$1->Gentry->type;
     $$=$1;
-}
+    }
+    | ID LBRACK NUM RBRACK {
+        $1->Gentry=lookup($1->varname);
+        if($1->Gentry==NULL){
+            printf("variable %s not declared\n",$1->varname);
+            exit(1);
+        }
+        else if($3->val>=$1->Gentry->size || $3->val < 0){
+            printf("Array %s out of bounds\n",$1->varname);
+            exit(1);
+        }
+        $1->type=$1->Gentry->type;
+        $$=createTree($1->type,0,ARRAY_NODE,NULL,$1,$3,NULL);
+    }
+    | ID LBRACK id RBRACK{
+        $1->Gentry=lookup($1->varname);
+        if($1->Gentry==NULL){
+            printf("variable %s not declared\n",$1->varname);
+            exit(1);
+        }
+        $1->type=$1->Gentry->type;
+        $$=createTree($1->type,0,ARRAY_NODE,NULL,$1,$3,NULL);
+    }
 
 %%
 
