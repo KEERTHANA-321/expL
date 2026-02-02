@@ -1,0 +1,9 @@
+begin
+    sum = 0;
+    read(a);
+    repeat
+        sum = sum + a;
+        read(a);
+    until (a == 0);
+    write(sum);
+end;

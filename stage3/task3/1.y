@@ -3,6 +3,7 @@
     #include <stdlib.h>
     #include "nodestructure.h"
     #include "constants.h"
+    
 
     int yylex(void);
     void yyerror(char const *msg);
@@ -14,13 +15,13 @@
     struct tnode *node;
 }
 
-%token KW_BEGIN END READ WRITE PLUS MINUS MUL DIV ASSGN NUM ID SEMI ASSIGN
+%token KW_BEGIN END READ WRITE PLUS MINUS MUL DIV NUM ID SEMI ASSIGN
 %token LE,LT,GE,GT,NE,EQ,IF,WHILE,ENDWHILE,ENDIF,DO,THEN,ELSE
 %left PLUS MINUS
 %left MUL DIV
 %right ASSGN
 %nonassoc LT GT LE GE
-%right EQ NEQ
+%right EQ NE
 
 %type <node> NUM ID KW_BEGIN END READ WRITE PLUS MINUS MUL DIV ASSIGN
 %type <node> IF THEN ELSE ENDIF WHILE DO ENDWHILE EQ NEQ LE GE LT GT
@@ -80,18 +81,22 @@ AsgStmt : ID ASSIGN expr SEMI {
 expr : expr PLUS expr { 
         typecheck($1->type,$3->type,'a');
         $$ = createTree(1,0,ADD_NODE,NULL, $1, $3,NULL); 
+        $$->type = INT;
         }
     | expr MINUS expr {
         typecheck($1->type,$3->type,'a'); 
         $$ = createTree(1,0,SUB_NODE,NULL, $1, $3,NULL); 
+        $$->type = INT;
         }
     | expr MUL expr {
         typecheck($1->type,$3->type,'a');
         $$ = createTree(1,0,MUL_NODE,NULL, $1, $3,NULL); 
+        $$->type = INT;
         }
     | expr DIV expr {
         typecheck($1->type,$3->type,'a');
         $$ = createTree(1,0,DIV_NODE,NULL,$1,$3,NULL);
+        $$->type = INT;
         }
     | expr LT expr {
         typecheck($1->type,$3->type,'b'); 
@@ -123,8 +128,18 @@ void yyerror(char const *msg) {
     return;
 }
 
-int main() {
-    FILE *source_file = fopen(SOURCE_FILE, "r");
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        printf("Usage: %s <sourcefile>\n", argv[0]);
+        return 1;
+    }
+
+    FILE *source_file = fopen(argv[1], "r");
+    if (source_file == NULL) {
+        perror("Error opening source file");
+        return 1;
+    }
+
     yyin = source_file;
     return yyparse();
 }

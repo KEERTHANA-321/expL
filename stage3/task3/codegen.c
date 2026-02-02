@@ -110,9 +110,9 @@ int codegen(struct tnode* root){
             status = counter;
 
             fprintf(out, "MOV R0,\"Write\"\n");
-            fprintf(out, "PUSH R0\n"); // function code "Write"
+            fprintf(out, "PUSH R0\n"); 
             fprintf(out, "MOV R0,-2\n");
-            fprintf(out, "PUSH R0\n"); //Argument 1
+            fprintf(out, "PUSH R0\n"); 
 
             r1 = codegen(root->left);
             fprintf(out, "PUSH R%d\n", r1); //Argument 2

@@ -1,0 +1,7 @@
+begin
+    read(a);
+    do
+        write(a);
+        read(a);
+    while (a != 0);
+end;

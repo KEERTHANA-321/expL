@@ -1686,7 +1686,7 @@ void yyerror(char const *msg) {
 }
 
 int main() {
-    FILE *source_file = fopen(SOURCE_FILE, "r");
+    FILE *source_file = fopen("error.expl", "r");
     yyin = source_file;
     return yyparse();
 }

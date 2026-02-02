@@ -32,7 +32,7 @@
         yylval.node=createTree(INT,0,VARIABLE_NODE,variable,NULL,NULL,NULL);
         return ID;}
 "=="    {return EQ;}
-"!="    {return NEQ;}
+"!="    {return NE;}
 "<="    {return LE;}
 ">="    {return GE;}
 "<" {return LT;}
@@ -46,7 +46,9 @@
 
 [\t ] {}
 [()] {return yytext[0];}
+[\n] {}
 . {printf("unknown character %s\n", yytext); exit(1);}
+
 
 %%
 
