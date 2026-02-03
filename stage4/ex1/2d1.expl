@@ -1,0 +1,17 @@
+decl
+        int a, b;
+        int nums[3][4];
+        str list[2][3];
+        str name;
+        int hello;
+enddecl
+begin
+
+    nums[0][1] = 2;
+    nums[0][2] = 1;
+
+    list[1][2] = "kite";
+
+    write(nums[0][2]);
+    write(list[1][2]);
+end;

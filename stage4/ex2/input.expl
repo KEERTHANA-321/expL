@@ -1,0 +1,13 @@
+decl
+    int x, *p;
+    str s, *q;
+enddecl
+
+begin
+    p = &x;
+    *p = 10;
+
+    q = &s;
+    *q = "hello";
+    write(x);
+end;
