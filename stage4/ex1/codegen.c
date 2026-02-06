@@ -4,6 +4,7 @@
 #include "constants.h"
 #include "nodestructure.h"
 #include "symbolTable.h"
+void yyerror(char const *msg);
 
 extern FILE * out;
 
@@ -25,10 +26,10 @@ int getReg(){
         freeReg();
         return getReg();
     }
-    else{
-        regno++;
-        return regno;
-    }
+    regno++;
+    if (regno > counter)
+        counter = regno;
+    return regno;
 }
 void generateExitCode() {
     int reg = getReg();
@@ -78,67 +79,135 @@ struct tnode* getBaseIdNode(struct tnode *node) {
 //         return -1;
 //     }
 // }
-int getMemoryAddress(struct tnode* root) {
-    int rRow, rCol, rTemp;
-    struct tnode *base;
+
+// int getMemoryAddress(struct tnode *root)
+// {
+//     int rBase, rIndex, rRow, rCol, rTemp;
+//     struct Gsymbol *g;
+
+//     if (root->nodetype == VARIABLE_NODE) {
+//         rBase = getReg();
+//         fprintf(out, "MOV R%d, %d\n", rBase, root->Gentry->binding);
+//         return rBase;
+//     }
+
+//     if (root->nodetype != ARRAY_NODE && root->nodetype!=TWOD_ARRAY_NODE) {
+//         yyerror("Invalid node in getMemoryAddress");
+//         return -1;
+//     }
+
+//     struct tnode *base = root;
+//     while (base->nodetype == ARRAY_NODE)
+//         base = base->left;
+
+//     g = base->Gentry;
+
+//     if (root->left->nodetype == VARIABLE_NODE) {
+
+//         rIndex = codegen(root->right);
+
+//         /* offset = index * element_size */
+//         // rTemp = getReg();
+//         // fprintf(out, "MOV R%d, %d\n", rTemp, getSize(g->type));
+//         // fprintf(out, "MUL R%d, R%d\n", rIndex, rTemp);
+//         // freeReg(); 
+
+//         /* address = base + offset */
+//         fprintf(out, "ADD R%d, %d\n", rIndex, g->binding);
+
+//         return rIndex;
+//     }
+
+
+//     rCol = codegen(root->right);      
+//     rRow = codegen(root->middle);   
+
+//     /* rRow = i * cols */
+//     rTemp = getReg();
+//     fprintf(out, "MOV R%d, %d\n", rTemp, g->cols);
+//     fprintf(out, "MUL R%d, R%d\n", rRow, rTemp);
+//     freeReg();   
+
+//     /* rRow = (i * cols) + j */
+//     fprintf(out, "ADD R%d, R%d\n", rRow, rCol);
+//     freeReg();  
+
+//     // /* rRow = offset * element_size */
+//     // rTemp = getReg();
+//     // fprintf(out, "MOV R%d, %d\n", rTemp, getSize(g->type));
+//     // fprintf(out, "MUL R%d, R%d\n", rRow, rTemp);
+//     // freeReg(); 
+
+//     /* address = base + offset */
+//     fprintf(out, "ADD R%d, %d\n", rRow, g->binding);
+
+//     return rRow;
+// }
+
+int saved_regno;
+
+void lockReg() {
+    saved_regno = regno;
+}
+
+void unlockReg() {
+    regno = saved_regno;
+}
+
+int getMemoryAddress(struct tnode *root)
+{
+    int rAddr, rRow, rCol, rTemp;
     struct Gsymbol *g;
-
     if (root->nodetype == VARIABLE_NODE) {
-        int r = getReg();
-        fprintf(out, "MOV R%d, %d\n", r, root->Gentry->binding);
-        return r;
+        rAddr = getReg();
+        fprintf(out, "MOV R%d, %d\n", rAddr, root->Gentry->binding);
+        return rAddr;
     }
-
-    /* ---------- 2D ARRAY ONLY ---------- */
     if (root->nodetype == ARRAY_NODE) {
 
-        /* outer ARRAY → column */
-        rCol = codegen(root->right);
+        struct tnode *base = root;
+        while (base->nodetype == ARRAY_NODE)
+            base = base->left;
 
-        /* inner ARRAY → row */
-        if (root->left->nodetype != ARRAY_NODE) {
-            printf("Not a 2D array access\n");
-            exit(1);
-        }
-
-        rRow = codegen(root->left->right);
-
-        /* get base symbol */
-        base = getBaseIdNode(root);
         g = base->Gentry;
 
-        /* -------- bounds check (compile-time for NUM) -------- */
-        if (root->right->nodetype == NUM_NODE) {
-            if (root->right->val < 0 || root->right->val >= g->cols) {
-                printf("Column index out of bounds\n");
-                exit(1);
-            }
-        }
-        if (root->left->right->nodetype == NUM_NODE) {
-            if (root->left->right->val < 0 || root->left->right->val >= g->rows) {
-                printf("Row index out of bounds\n");
-                exit(1);
-            }
-        }
+        rCol = codegen(root->right);
 
-        /* rRow = rRow * cols */
+        /* address = base + index */
+        fprintf(out, "ADD R%d, %d\n", rCol, g->binding);
+        return rCol;
+    }
+
+    if (root->nodetype == TWOD_ARRAY_NODE) {
+
+        g = root->left->Gentry;   /* base symbol */
+
+        /* col index */
+        rCol = codegen(root->right);
+
+        /* row index */
+        rRow = codegen(root->middle);
+
+        /* rRow = row * cols */
         rTemp = getReg();
         fprintf(out, "MOV R%d, %d\n", rTemp, g->cols);
         fprintf(out, "MUL R%d, R%d\n", rRow, rTemp);
         freeReg();
 
-        /* rRow = rRow + col */
+        /* rRow = (row * cols) + col */
         fprintf(out, "ADD R%d, R%d\n", rRow, rCol);
         freeReg();
 
-        /* rRow = rRow + base */
+        /* rRow = base + offset */
         fprintf(out, "ADD R%d, %d\n", rRow, g->binding);
 
         return rRow;
     }
 
+    yyerror("Invalid node type in getMemoryAddress");
     return -1;
 }
+
 
 int codegen(struct tnode* root){
     int r1,r2,r3,number,status=0;
@@ -170,6 +239,10 @@ int codegen(struct tnode* root){
             r1 = getMemoryAddress(root);
             fprintf(out, "MOV R%d, [R%d]\n", r1, r1);
             return r1;
+        case TWOD_ARRAY_NODE:
+            r1=getMemoryAddress(root);
+            fprintf(out, "MOV R%d, [R%d]\n", r1, r1);
+            return r1;
         case ADD_NODE:{
             r1 = codegen(root->left);
             r2 = codegen(root->right);
@@ -198,14 +271,29 @@ int codegen(struct tnode* root){
             freeReg();
             return r1;
         }
-        case ASSIGN_NODE:{
-            r1=codegen(root->right);
-            r2=getMemoryAddress(root->left);
-            fprintf(out,"MOV [R%d],R%d\n",r2,r1);
-            freeReg();
-            freeReg();
-            return r1;
+        // case ASSIGN_NODE:{
+
+        //     r1=codegen(root->right);
+        //     r2=getMemoryAddress(root->left);
+        //     fprintf(out,"MOV [R%d],R%d\n",r2,r1);
+        //     freeReg();
+        //     freeReg();
+        //     return r1;
+        // }
+        case ASSIGN_NODE: {
+            int rVal = codegen(root->right);
+
+            lockReg();                        // prevent overwrite
+            int rAddr = getMemoryAddress(root->left);
+
+            fprintf(out, "MOV [R%d], R%d\n", rAddr, rVal);
+
+            unlockReg();                      // restore allocator state
+            freeReg();                        // rAddr
+            freeReg();                        // rVal
+            return -1;
         }
+
         case WRITE_NODE:{
             for (i = 0; i <= counter; i++)
                 fprintf(out, "PUSH R%d\n", i);
@@ -231,7 +319,6 @@ int codegen(struct tnode* root){
         case READ_NODE: {
             int addr = getMemoryAddress(root->left);
 
-            // Save registers
             for (i = 0; i <= counter; i++)
                 fprintf(out, "PUSH R%d\n", i);
             status = counter;
@@ -250,11 +337,9 @@ int codegen(struct tnode* root){
 
             fprintf(out, "CALL 0\n");
 
-            // Pop syscall args
             for (i = 0; i < 5; i++)
                 fprintf(out, "POP R0\n");
 
-            // Restore registers
             for (i = status; i >= 0; i--)
                 fprintf(out, "POP R%d\n", i);
 
@@ -395,5 +480,6 @@ int codegen(struct tnode* root){
         }
 
     }
+    return -1;
 
 }

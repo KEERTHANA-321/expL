@@ -235,10 +235,8 @@ id: ID {
         }
         $1->type = $1->Gentry->type;
 
-        struct tnode *row =
-            createTree($1->type, 0, ARRAY_NODE, NULL, $1, $3, NULL);
 
-        $$ = createTree($1->type, 0, ARRAY_NODE, NULL, row, $6, NULL);
+        $$ = createTree($1->type, 0, TWOD_ARRAY_NODE, NULL, $1, $3, $6);
     };
 
 %%

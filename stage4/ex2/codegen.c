@@ -176,7 +176,6 @@ int codegen(struct tnode* root){
         case READ_NODE: {
             int addr = getMemoryAddress(root->left);
 
-            // Save registers
             for (i = 0; i <= counter; i++)
                 fprintf(out, "PUSH R%d\n", i);
             status = counter;
@@ -195,11 +194,9 @@ int codegen(struct tnode* root){
 
             fprintf(out, "CALL 0\n");
 
-            // Pop syscall args
             for (i = 0; i < 5; i++)
                 fprintf(out, "POP R0\n");
 
-            // Restore registers
             for (i = status; i >= 0; i--)
                 fprintf(out, "POP R%d\n", i);
 

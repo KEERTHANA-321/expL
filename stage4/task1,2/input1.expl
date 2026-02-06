@@ -3,7 +3,7 @@ decl
     str mesg;
 enddecl
 begin
-    read(num);
+    read(n);
     sum=0;
     while(num!=0) do
         sum=sum+num;

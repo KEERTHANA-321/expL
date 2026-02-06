@@ -46,6 +46,7 @@ enum nodeTypes {
     DOWHILE_NODE,
     REPEAT_NODE,
     MOD_NODE,
+    TWOD_ARRAY_NODE,
 };
 int getLabel();
 void freeReg();

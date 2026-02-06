@@ -63,7 +63,7 @@ int getMemoryAddress(struct tnode* root) {
         if(root->right == NULL) {
             r = getReg();
             if(r == 0) r = getReg();
-            fprintf(out, "MOV R%d, 0\n", r);  // or base offset
+            fprintf(out, "MOV R%d, 0\n", r);
         } else {
             r = codegen(root->right);
         }
@@ -256,8 +256,6 @@ int codegen(struct tnode* root){
             whileStart = prevWhileStart;
             whileEnd = prevWhileEnd;
             break;
-
-
         }
         case IF_ELSE_NODE:{
             int label_1=getLabel();

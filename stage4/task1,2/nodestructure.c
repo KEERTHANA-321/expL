@@ -68,6 +68,10 @@ void printNode(struct tnode *node) {
             break;
         case ARRAY_NODE:
             printf("ARRAY\n");
+            break;
+        // case TWOD_ARRAY_NODE:
+        //     printf("2D-ARRAY\n");
+        //     break;
 
         case ADD_NODE:
             printf("+\n");

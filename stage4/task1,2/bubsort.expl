@@ -28,5 +28,6 @@ begin
     write(arr[i]);
     i = i+1;
   endwhile;
+  write(arr[51]);
 end;
 

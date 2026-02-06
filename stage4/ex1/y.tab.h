@@ -39,7 +39,7 @@
 # define YY_YY_Y_TAB_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
-# define YYDEBUG 1
+# define YYDEBUG 0
 #endif
 #if YYDEBUG
 extern int yydebug;
@@ -67,31 +67,32 @@ extern int yydebug;
     SEMI = 268,                    /* SEMI  */
     ASSIGN = 269,                  /* ASSIGN  */
     STRVAL = 270,                  /* STRVAL  */
-    LE = 271,                      /* LE  */
-    LT = 272,                      /* LT  */
-    GE = 273,                      /* GE  */
-    GT = 274,                      /* GT  */
-    NE = 275,                      /* NE  */
-    EQ = 276,                      /* EQ  */
-    IF = 277,                      /* IF  */
-    WHILE = 278,                   /* WHILE  */
-    ENDWHILE = 279,                /* ENDWHILE  */
-    ENDIF = 280,                   /* ENDIF  */
-    DO = 281,                      /* DO  */
-    THEN = 282,                    /* THEN  */
-    ELSE = 283,                    /* ELSE  */
-    BREAK = 284,                   /* BREAK  */
-    CONT = 285,                    /* CONT  */
-    REPEAT = 286,                  /* REPEAT  */
-    UNTIL = 287,                   /* UNTIL  */
-    DECL = 288,                    /* DECL  */
-    ENDDECL = 289,                 /* ENDDECL  */
-    T_INT = 290,                   /* T_INT  */
-    T_STR = 291,                   /* T_STR  */
-    COMMA = 292,                   /* COMMA  */
-    LBRACK = 293,                  /* LBRACK  */
-    RBRACK = 294,                  /* RBRACK  */
-    ASSGN = 295                    /* ASSGN  */
+    MOD = 271,                     /* MOD  */
+    LE = 272,                      /* LE  */
+    LT = 273,                      /* LT  */
+    GE = 274,                      /* GE  */
+    GT = 275,                      /* GT  */
+    NE = 276,                      /* NE  */
+    EQ = 277,                      /* EQ  */
+    IF = 278,                      /* IF  */
+    WHILE = 279,                   /* WHILE  */
+    ENDWHILE = 280,                /* ENDWHILE  */
+    ENDIF = 281,                   /* ENDIF  */
+    DO = 282,                      /* DO  */
+    THEN = 283,                    /* THEN  */
+    ELSE = 284,                    /* ELSE  */
+    BREAK = 285,                   /* BREAK  */
+    CONT = 286,                    /* CONT  */
+    REPEAT = 287,                  /* REPEAT  */
+    UNTIL = 288,                   /* UNTIL  */
+    DECL = 289,                    /* DECL  */
+    ENDDECL = 290,                 /* ENDDECL  */
+    T_INT = 291,                   /* T_INT  */
+    T_STR = 292,                   /* T_STR  */
+    COMMA = 293,                   /* COMMA  */
+    LBRACK = 294,                  /* LBRACK  */
+    RBRACK = 295,                  /* RBRACK  */
+    ASSGN = 296                    /* ASSGN  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -113,31 +114,32 @@ extern int yydebug;
 #define SEMI 268
 #define ASSIGN 269
 #define STRVAL 270
-#define LE 271
-#define LT 272
-#define GE 273
-#define GT 274
-#define NE 275
-#define EQ 276
-#define IF 277
-#define WHILE 278
-#define ENDWHILE 279
-#define ENDIF 280
-#define DO 281
-#define THEN 282
-#define ELSE 283
-#define BREAK 284
-#define CONT 285
-#define REPEAT 286
-#define UNTIL 287
-#define DECL 288
-#define ENDDECL 289
-#define T_INT 290
-#define T_STR 291
-#define COMMA 292
-#define LBRACK 293
-#define RBRACK 294
-#define ASSGN 295
+#define MOD 271
+#define LE 272
+#define LT 273
+#define GE 274
+#define GT 275
+#define NE 276
+#define EQ 277
+#define IF 278
+#define WHILE 279
+#define ENDWHILE 280
+#define ENDIF 281
+#define DO 282
+#define THEN 283
+#define ELSE 284
+#define BREAK 285
+#define CONT 286
+#define REPEAT 287
+#define UNTIL 288
+#define DECL 289
+#define ENDDECL 290
+#define T_INT 291
+#define T_STR 292
+#define COMMA 293
+#define LBRACK 294
+#define RBRACK 295
+#define ASSGN 296
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -147,7 +149,7 @@ union YYSTYPE
 
     struct tnode *node;
 
-#line 151 "y.tab.h"
+#line 153 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
