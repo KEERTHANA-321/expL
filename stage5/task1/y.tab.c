@@ -732,12 +732,12 @@ static const yytype_int16 yyrline[] =
        0,    42,    42,    49,    56,    58,    59,    61,    62,    64,
       67,    68,    71,    72,    75,    76,    78,    83,    91,   100,
      101,   103,   176,   177,   178,   180,   185,   186,   187,   189,
-     190,   192,   194,   195,   201,   247,   248,   250,   260,   261,
-     264,   265,   266,   267,   268,   269,   270,   271,   272,   273,
-     276,   280,   285,   290,   294,   299,   304,   308,   312,   314,
-     317,   321,   325,   329,   333,   337,   341,   345,   349,   353,
-     357,   361,   362,   365,   366,   367,   368,   370,   374,   378,
-     383,   404,   416,   417
+     190,   192,   194,   195,   201,   248,   249,   251,   261,   262,
+     265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
+     277,   281,   286,   291,   295,   300,   305,   309,   313,   318,
+     324,   328,   332,   336,   340,   344,   348,   352,   356,   360,
+     364,   368,   369,   372,   373,   374,   375,   377,   381,   385,
+     390,   411,   423,   424
 };
 #endif
 
@@ -1479,40 +1479,28 @@ yyreduce:
 #line 1480 "y.tab.c"
     break;
 
-  case 5: /* GDeclBlock: DECL GDeclList ENDDECL  */
-#line 58 "first.y"
-                                    {initialize();}
-#line 1486 "y.tab.c"
-    break;
-
-  case 6: /* GDeclBlock: DECL ENDDECL  */
-#line 59 "first.y"
-                           {initialize();}
-#line 1492 "y.tab.c"
-    break;
-
   case 10: /* Type: T_INT  */
 #line 67 "first.y"
              { declaration_type = INT; }
-#line 1498 "y.tab.c"
+#line 1486 "y.tab.c"
     break;
 
   case 11: /* Type: T_STR  */
 #line 68 "first.y"
             { declaration_type = STRING; }
-#line 1504 "y.tab.c"
+#line 1492 "y.tab.c"
     break;
 
   case 12: /* Ftype: T_INT  */
 #line 71 "first.y"
               { fdeclaration_type = INT; }
-#line 1510 "y.tab.c"
+#line 1498 "y.tab.c"
     break;
 
   case 13: /* Ftype: T_STR  */
 #line 72 "first.y"
             { fdeclaration_type = STRING; }
-#line 1516 "y.tab.c"
+#line 1504 "y.tab.c"
     break;
 
   case 16: /* Gid: ID  */
@@ -1522,7 +1510,7 @@ yyreduce:
      
      GInstall((yyvsp[0].node)->varname,declaration_type,1,NULL);
 }
-#line 1526 "y.tab.c"
+#line 1514 "y.tab.c"
     break;
 
   case 17: /* Gid: ID LBRACK NUM RBRACK  */
@@ -1535,7 +1523,7 @@ yyreduce:
     }
      GInstall((yyvsp[-3].node)->varname,declaration_type,(yyvsp[-1].node)->value.intval,NULL);
     }
-#line 1539 "y.tab.c"
+#line 1527 "y.tab.c"
     break;
 
   case 18: /* Gid: ID LPAREN ParamList RPAREN  */
@@ -1547,7 +1535,7 @@ yyreduce:
         Phead=NULL;
         Ptail=NULL;
     }
-#line 1551 "y.tab.c"
+#line 1539 "y.tab.c"
     break;
 
   case 21: /* FDef: Ftype ID LPAREN ParamList RPAREN LBRACE LDeclBlock Body RBRACE  */
@@ -1623,7 +1611,7 @@ yyreduce:
             Ltail = NULL;
         
         }
-#line 1627 "y.tab.c"
+#line 1615 "y.tab.c"
     break;
 
   case 25: /* Param: Ftype ID  */
@@ -1632,25 +1620,25 @@ yyreduce:
                     checkAvailability((yyvsp[0].node)->varname, 0);
                     PInstall((yyvsp[0].node)->varname, fdeclaration_type);
                 }
-#line 1636 "y.tab.c"
+#line 1624 "y.tab.c"
     break;
 
   case 26: /* LDeclBlock: DECL LDeclList ENDDECL  */
 #line 185 "first.y"
                                     {InstallParamsInLocal();}
-#line 1642 "y.tab.c"
+#line 1630 "y.tab.c"
     break;
 
   case 27: /* LDeclBlock: DECL ENDDECL  */
 #line 186 "first.y"
                            {InstallParamsInLocal();}
-#line 1648 "y.tab.c"
+#line 1636 "y.tab.c"
     break;
 
   case 28: /* LDeclBlock: %empty  */
 #line 187 "first.y"
               {InstallParamsInLocal();}
-#line 1654 "y.tab.c"
+#line 1642 "y.tab.c"
     break;
 
   case 33: /* IdList: ID  */
@@ -1659,7 +1647,7 @@ yyreduce:
                     checkAvailability((yyvsp[0].node)->varname, 0);
                     LInstall((yyvsp[0].node)->varname, declaration_type);
                 }
-#line 1663 "y.tab.c"
+#line 1651 "y.tab.c"
     break;
 
   case 34: /* MainBlock: T_INT MAIN LPAREN RPAREN LBRACE LDeclBlock Body RBRACE  */
@@ -1706,26 +1694,27 @@ yyreduce:
     }
 
     codegen((yyvsp[-1].node));
+    generateExitCode();
     Lhead = NULL;
     Ltail = NULL;
     }
-#line 1713 "y.tab.c"
+#line 1702 "y.tab.c"
     break;
 
   case 35: /* Body: KW_BEGIN Slist RetStmt END  */
-#line 247 "first.y"
+#line 248 "first.y"
                                   {(yyval.node) = createTree(NONE, NULL,CONNECTOR_NODE, NULL, NULL, (yyvsp[-2].node), (yyvsp[-1].node), NULL);}
-#line 1719 "y.tab.c"
+#line 1708 "y.tab.c"
     break;
 
   case 36: /* Body: KW_BEGIN RetStmt END  */
-#line 248 "first.y"
+#line 249 "first.y"
                            {(yyval.node) = (yyvsp[-1].node);}
-#line 1725 "y.tab.c"
+#line 1714 "y.tab.c"
     break;
 
   case 37: /* RetStmt: RETURN expr SEMI  */
-#line 250 "first.y"
+#line 251 "first.y"
                              {
                                 if(current_function_type == (yyvsp[-1].node)->type) {
                                     (yyval.node) = createTree(NONE, NULL,RET_NODE, NULL, NULL, (yyvsp[-1].node), NULL, NULL);
@@ -1734,316 +1723,334 @@ yyreduce:
                                     exit(1);
                                 }
                             }
-#line 1738 "y.tab.c"
+#line 1727 "y.tab.c"
     break;
 
   case 38: /* Slist: Slist Stmt  */
-#line 260 "first.y"
+#line 261 "first.y"
                    {(yyval.node) = createTree(NONE, NULL,CONNECTOR_NODE, NULL, NULL, (yyvsp[-1].node), (yyvsp[0].node), NULL);}
-#line 1744 "y.tab.c"
+#line 1733 "y.tab.c"
     break;
 
   case 39: /* Slist: Stmt  */
-#line 261 "first.y"
+#line 262 "first.y"
            {(yyval.node)=(yyvsp[0].node);}
-#line 1750 "y.tab.c"
+#line 1739 "y.tab.c"
     break;
 
   case 40: /* Stmt: InputStmt  */
-#line 264 "first.y"
+#line 265 "first.y"
                   {(yyval.node) = (yyvsp[0].node);}
-#line 1756 "y.tab.c"
+#line 1745 "y.tab.c"
     break;
 
   case 41: /* Stmt: OutputStmt  */
-#line 265 "first.y"
+#line 266 "first.y"
                  {(yyval.node) = (yyvsp[0].node);}
-#line 1762 "y.tab.c"
+#line 1751 "y.tab.c"
     break;
 
   case 42: /* Stmt: AsgStmt  */
-#line 266 "first.y"
+#line 267 "first.y"
                {(yyval.node) = (yyvsp[0].node);}
-#line 1768 "y.tab.c"
+#line 1757 "y.tab.c"
     break;
 
   case 43: /* Stmt: IfStmt  */
-#line 267 "first.y"
+#line 268 "first.y"
               {(yyval.node) = (yyvsp[0].node);}
-#line 1774 "y.tab.c"
+#line 1763 "y.tab.c"
     break;
 
   case 44: /* Stmt: WhileStmt  */
-#line 268 "first.y"
+#line 269 "first.y"
                 {(yyval.node) = (yyvsp[0].node);}
-#line 1780 "y.tab.c"
+#line 1769 "y.tab.c"
     break;
 
   case 45: /* Stmt: BrkStmt  */
-#line 269 "first.y"
+#line 270 "first.y"
                 {(yyval.node) = (yyvsp[0].node);}
-#line 1786 "y.tab.c"
+#line 1775 "y.tab.c"
     break;
 
   case 46: /* Stmt: ContStmt  */
-#line 270 "first.y"
+#line 271 "first.y"
                 {(yyval.node) = (yyvsp[0].node);}
-#line 1792 "y.tab.c"
+#line 1781 "y.tab.c"
     break;
 
   case 47: /* Stmt: repeatUntilStmt  */
-#line 271 "first.y"
+#line 272 "first.y"
                       {(yyval.node) = (yyvsp[0].node);}
-#line 1798 "y.tab.c"
+#line 1787 "y.tab.c"
     break;
 
   case 48: /* Stmt: doWhileStmt  */
-#line 272 "first.y"
+#line 273 "first.y"
                   {(yyval.node) = (yyvsp[0].node);}
-#line 1804 "y.tab.c"
+#line 1793 "y.tab.c"
     break;
 
   case 49: /* Stmt: func SEMI  */
-#line 273 "first.y"
+#line 274 "first.y"
                 {(yyval.node) = (yyvsp[-1].node);}
-#line 1810 "y.tab.c"
+#line 1799 "y.tab.c"
     break;
 
   case 50: /* InputStmt: READ LPAREN id RPAREN SEMI  */
-#line 276 "first.y"
+#line 277 "first.y"
                                        {
     (yyval.node) = createTree(NONE, NULL,READ_NODE, NULL, NULL, (yyvsp[-2].node),NULL, NULL);
 }
-#line 1818 "y.tab.c"
+#line 1807 "y.tab.c"
     break;
 
   case 51: /* OutputStmt: WRITE LPAREN expr RPAREN SEMI  */
-#line 280 "first.y"
+#line 281 "first.y"
                                            {
             (yyval.node) = createTree(NONE, NULL,WRITE_NODE, NULL, NULL, (yyvsp[-2].node), NULL, NULL);
             
 }
-#line 1827 "y.tab.c"
+#line 1816 "y.tab.c"
     break;
 
   case 52: /* AsgStmt: id ASSIGN expr SEMI  */
-#line 285 "first.y"
+#line 286 "first.y"
                                {
             typecheck((yyvsp[-3].node)->type, (yyvsp[-1].node)->type, '=');
             (yyval.node) = createTree(NONE, NULL,ASSIGN_NODE, NULL, NULL, (yyvsp[-3].node), (yyvsp[-1].node), NULL);
         }
-#line 1836 "y.tab.c"
+#line 1825 "y.tab.c"
     break;
 
   case 53: /* IfStmt: IF LPAREN expr RPAREN THEN Slist ELSE Slist ENDIF SEMI  */
-#line 290 "first.y"
+#line 291 "first.y"
                                                                 {
         typecheck((yyvsp[-7].node)->type, BOOL, 'e');
         (yyval.node) = createTree(NONE, NULL,IF_ELSE_NODE, NULL, NULL, (yyvsp[-7].node), (yyvsp[-2].node), (yyvsp[-4].node));
 }
-#line 1845 "y.tab.c"
+#line 1834 "y.tab.c"
     break;
 
   case 54: /* IfStmt: IF LPAREN expr RPAREN THEN Slist ENDIF SEMI  */
-#line 294 "first.y"
+#line 295 "first.y"
                                                   {
         typecheck((yyvsp[-5].node)->type, BOOL, 'i');
         (yyval.node) = createTree(NONE, NULL,IF_NODE, NULL, NULL, (yyvsp[-5].node), (yyvsp[-2].node),NULL);
 }
-#line 1854 "y.tab.c"
+#line 1843 "y.tab.c"
     break;
 
   case 55: /* WhileStmt: WHILE LPAREN expr RPAREN DO Slist ENDWHILE SEMI  */
-#line 299 "first.y"
+#line 300 "first.y"
                                                            {
         typecheck((yyvsp[-5].node)->type,BOOL, 'w');
         (yyval.node) = createTree(NONE, NULL,WHILE_NODE, NULL, NULL, (yyvsp[-5].node), (yyvsp[-2].node), NULL);
 }
-#line 1863 "y.tab.c"
+#line 1852 "y.tab.c"
     break;
 
   case 56: /* BrkStmt: BREAK SEMI  */
-#line 304 "first.y"
+#line 305 "first.y"
                      {
     (yyval.node) = createTree(NONE, NULL,BREAK_NODE, NULL, NULL, NULL, NULL, NULL);
 }
-#line 1871 "y.tab.c"
+#line 1860 "y.tab.c"
     break;
 
   case 57: /* ContStmt: CONT SEMI  */
-#line 308 "first.y"
+#line 309 "first.y"
                     {
     (yyval.node) = createTree(NONE, NULL,CONT_NODE, NULL, NULL, NULL, NULL, NULL);
 }
-#line 1879 "y.tab.c"
+#line 1868 "y.tab.c"
+    break;
+
+  case 58: /* repeatUntilStmt: REPEAT Slist UNTIL LPAREN expr RPAREN SEMI  */
+#line 313 "first.y"
+                                                            {
+    typecheck((yyvsp[-2].node)->type, BOOL, 'r');
+    (yyval.node) = createTree(NONE, NULL, REPEAT_NODE, NULL, NULL, (yyvsp[-5].node), (yyvsp[-2].node), NULL);
+}
+#line 1877 "y.tab.c"
+    break;
+
+  case 59: /* doWhileStmt: DO Slist WHILE LPAREN expr RPAREN SEMI  */
+#line 318 "first.y"
+                                                    {
+    typecheck((yyvsp[-2].node)->type, BOOL, 'd');
+    (yyval.node) = createTree(NONE, NULL, DOWHILE_NODE, NULL, NULL, (yyvsp[-5].node), (yyvsp[-2].node), NULL);
+}
+#line 1886 "y.tab.c"
     break;
 
   case 60: /* expr: expr PLUS expr  */
-#line 317 "first.y"
+#line 324 "first.y"
                       {
         typecheck((yyvsp[-2].node)->type, (yyvsp[0].node)->type, 'a');
         (yyval.node) = createTree(INT,NULL, ADD_NODE, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node), NULL);
 }
-#line 1888 "y.tab.c"
+#line 1895 "y.tab.c"
     break;
 
   case 61: /* expr: expr MINUS expr  */
-#line 321 "first.y"
+#line 328 "first.y"
                      {
         typecheck((yyvsp[-2].node)->type, (yyvsp[0].node)->type, 'a');
         (yyval.node) = createTree(INT,NULL, SUB_NODE, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node), NULL);
 }
-#line 1897 "y.tab.c"
+#line 1904 "y.tab.c"
     break;
 
   case 62: /* expr: expr MUL expr  */
-#line 325 "first.y"
+#line 332 "first.y"
                    {
         typecheck((yyvsp[-2].node)->type, (yyvsp[0].node)->type, 'a');
         (yyval.node) = createTree(INT,NULL, MUL_NODE, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node), NULL);
 }
-#line 1906 "y.tab.c"
+#line 1913 "y.tab.c"
     break;
 
   case 63: /* expr: expr DIV expr  */
-#line 329 "first.y"
+#line 336 "first.y"
                    {
         typecheck((yyvsp[-2].node)->type, (yyvsp[0].node)->type, 'a');
         (yyval.node) = createTree(INT,NULL, DIV_NODE, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node), NULL);
 }
-#line 1915 "y.tab.c"
+#line 1922 "y.tab.c"
     break;
 
   case 64: /* expr: expr LT expr  */
-#line 333 "first.y"
+#line 340 "first.y"
                    {
         typecheck((yyvsp[-2].node)->type, (yyvsp[0].node)->type, 'b');
         (yyval.node) = createTree(BOOL,NULL, LT_NODE, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node), NULL);
 }
-#line 1924 "y.tab.c"
+#line 1931 "y.tab.c"
     break;
 
   case 65: /* expr: expr LE expr  */
-#line 337 "first.y"
+#line 344 "first.y"
                   {
         typecheck((yyvsp[-2].node)->type, (yyvsp[0].node)->type, 'b');
         (yyval.node) = createTree(BOOL,NULL, LE_NODE, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node), NULL);
 }
-#line 1933 "y.tab.c"
+#line 1940 "y.tab.c"
     break;
 
   case 66: /* expr: expr GE expr  */
-#line 341 "first.y"
+#line 348 "first.y"
                   {
         typecheck((yyvsp[-2].node)->type, (yyvsp[0].node)->type, 'b');
         (yyval.node) = createTree(BOOL,NULL, GE_NODE, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node), NULL);
 }
-#line 1942 "y.tab.c"
+#line 1949 "y.tab.c"
     break;
 
   case 67: /* expr: expr GT expr  */
-#line 345 "first.y"
+#line 352 "first.y"
                   {
         typecheck((yyvsp[-2].node)->type, (yyvsp[0].node)->type, 'b');
         (yyval.node) = createTree(BOOL,NULL, GT_NODE, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node), NULL);
 }
-#line 1951 "y.tab.c"
+#line 1958 "y.tab.c"
     break;
 
   case 68: /* expr: expr NE expr  */
-#line 349 "first.y"
+#line 356 "first.y"
                   {
         typecheck((yyvsp[-2].node)->type, (yyvsp[0].node)->type, 'b');
         (yyval.node) = createTree(BOOL,NULL, NE_NODE, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node), NULL);
 }
-#line 1960 "y.tab.c"
+#line 1967 "y.tab.c"
     break;
 
   case 69: /* expr: expr EQ expr  */
-#line 353 "first.y"
+#line 360 "first.y"
                   {
         typecheck((yyvsp[-2].node)->type, (yyvsp[0].node)->type, 'b');
         (yyval.node) = createTree(BOOL,NULL, EQ_NODE, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node), NULL);
 }
-#line 1969 "y.tab.c"
+#line 1976 "y.tab.c"
     break;
 
   case 70: /* expr: expr MOD expr  */
-#line 357 "first.y"
+#line 364 "first.y"
                    {
         typecheck((yyvsp[-2].node)->type, (yyvsp[0].node)->type, 'a');
         (yyval.node) = createTree(INT,NULL, MOD_NODE, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node), NULL);
 }
-#line 1978 "y.tab.c"
+#line 1985 "y.tab.c"
     break;
 
   case 71: /* expr: LPAREN expr RPAREN  */
-#line 361 "first.y"
+#line 368 "first.y"
                          {(yyval.node) = (yyvsp[-1].node);}
-#line 1984 "y.tab.c"
+#line 1991 "y.tab.c"
     break;
 
   case 72: /* expr: MINUS NUM  */
-#line 362 "first.y"
+#line 369 "first.y"
                 {
         (yyvsp[0].node)->value.intval=-1*((yyvsp[0].node)->value.intval);
         (yyval.node) = (yyvsp[0].node);}
-#line 1992 "y.tab.c"
+#line 1999 "y.tab.c"
     break;
 
   case 73: /* expr: NUM  */
-#line 365 "first.y"
+#line 372 "first.y"
           {(yyval.node) = (yyvsp[0].node);}
-#line 1998 "y.tab.c"
+#line 2005 "y.tab.c"
     break;
 
   case 74: /* expr: STRVAL  */
-#line 366 "first.y"
+#line 373 "first.y"
              {(yyval.node) = (yyvsp[0].node);}
-#line 2004 "y.tab.c"
+#line 2011 "y.tab.c"
     break;
 
   case 75: /* expr: id  */
-#line 367 "first.y"
+#line 374 "first.y"
          {(yyval.node) = (yyvsp[0].node);}
-#line 2010 "y.tab.c"
+#line 2017 "y.tab.c"
     break;
 
   case 76: /* expr: func  */
-#line 368 "first.y"
+#line 375 "first.y"
            {(yyval.node) = (yyvsp[0].node);}
-#line 2016 "y.tab.c"
+#line 2023 "y.tab.c"
     break;
 
   case 77: /* id: ID  */
-#line 370 "first.y"
+#line 377 "first.y"
         {
         assignType((yyvsp[0].node),0);
         (yyval.node)=(yyvsp[0].node);
     }
-#line 2025 "y.tab.c"
+#line 2032 "y.tab.c"
     break;
 
   case 78: /* id: ID LBRACK NUM RBRACK  */
-#line 374 "first.y"
+#line 381 "first.y"
                            {
         assignType((yyvsp[-3].node),2);
         (yyval.node)=createTree((yyvsp[-3].node)->type,NULL,ARRAY_NODE,NULL,NULL,(yyvsp[-3].node),(yyvsp[-1].node),NULL);
     }
-#line 2034 "y.tab.c"
+#line 2041 "y.tab.c"
     break;
 
   case 79: /* id: ID LBRACK id RBRACK  */
-#line 378 "first.y"
+#line 385 "first.y"
                           {
         assignType((yyvsp[-3].node),2);
         (yyval.node)=createTree((yyvsp[-3].node)->type,NULL,ARRAY_NODE,NULL,NULL,(yyvsp[-3].node),(yyvsp[-1].node),NULL);
     }
-#line 2043 "y.tab.c"
+#line 2050 "y.tab.c"
     break;
 
   case 80: /* func: ID LPAREN ExprList RPAREN  */
-#line 383 "first.y"
+#line 390 "first.y"
                                  {
     assignType((yyvsp[-3].node),1);
     (yyvsp[-3].node)->nodetype=FUN_NODE;
@@ -2057,11 +2064,11 @@ yyreduce:
     checkFunctionArgs(g,g->paramlist, (yyvsp[-3].node)->argList);
     (yyval.node)=(yyvsp[-3].node);
 }
-#line 2061 "y.tab.c"
+#line 2068 "y.tab.c"
     break;
 
   case 81: /* ExprList: ExprList COMMA expr  */
-#line 404 "first.y"
+#line 411 "first.y"
                               {
                                 (yyval.node) = createTree(
                                     NONE,
@@ -2074,23 +2081,23 @@ yyreduce:
                                     NULL
                                 );
                             }
-#line 2078 "y.tab.c"
+#line 2085 "y.tab.c"
     break;
 
   case 82: /* ExprList: expr  */
-#line 416 "first.y"
+#line 423 "first.y"
                             {(yyval.node) = (yyvsp[0].node);}
-#line 2084 "y.tab.c"
+#line 2091 "y.tab.c"
     break;
 
   case 83: /* ExprList: %empty  */
-#line 417 "first.y"
+#line 424 "first.y"
                             {(yyval.node) = NULL;}
-#line 2090 "y.tab.c"
+#line 2097 "y.tab.c"
     break;
 
 
-#line 2094 "y.tab.c"
+#line 2101 "y.tab.c"
 
       default: break;
     }
@@ -2283,7 +2290,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 426 "first.y"
+#line 433 "first.y"
 
 void initSymbolTables(void) {
     Ghead = Gtail = NULL;
@@ -2319,6 +2326,7 @@ int main(int argc, char *argv[]) {
     }
 
     initSymbolTables();
+    initialize(); 
     yyin = source_file;
     return yyparse();
 }

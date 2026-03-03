@@ -95,6 +95,7 @@ void LInstall(char *name,int type){
     temp->type=type;
     temp->binding=localbindingstart;
     localbindingstart++;
+    temp->next=NULL;
     if(Lhead!=NULL){
         Ltail->next=temp;
         Ltail=temp;
@@ -112,6 +113,7 @@ void PInstall(char *name, int type) {
     temp->name = malloc(strlen(name) + 1);
     strcpy(temp->name, name);
     temp->type = type;
+    temp->next=NULL;
 
     if (Phead != NULL) {
         Ptail->next = temp;

@@ -78,32 +78,12 @@ void generateExitCode() {
 void initialize(){
     out=fopen("result.xsm","w");
     fprintf(out, "0\n2056\n0\n0\n0\n0\n0\n0\n");
-    fprintf(out, "ADD SP, 26\n");
-
-    fprintf(out,"BRKP\n");
+    fprintf(out, "MOV SP,4096\n");
+    fprintf(out,"MOV BP,SP\n");
+    fprintf(out, "CALL MAIN\n");
+    fprintf(out,"MOV R0, 10\nPUSH R0\nINT 10\n");
 }
 
-// int getMemoryAddress(struct tnode* root) {
-//     int r;
-//     if(root->nodetype == VARIABLE_NODE) {
-//         r = getReg();
-//         if(r == 0) r = getReg();
-//         fprintf(out, "MOV R%d, %d\n", r, root->Gentry->binding);
-//         return r;
-//     } else if(root->nodetype == ARRAY_NODE) {
-//         if(root->right == NULL) {
-//             r = getReg();
-//             if(r == 0) r = getReg();
-//             fprintf(out, "MOV R%d, 0\n", r);
-//         } else {
-//             r = codegen(root->right);
-//         }
-//         fprintf(out, "ADD R%d, %d\n", r, root->left->Gentry->binding);
-//         return r;
-//     } else {
-//         return -1;
-//     }
-// }
 int getMemoryAddress(struct tnode* root) {
     int r;
 
@@ -158,11 +138,11 @@ int codegen(struct tnode* root){
     if(root==NULL){
         return -1;
     }
-    else if(root->nodetype==CONNECTOR_NODE){
-        codegen(root->left);
-        codegen(root->right);
-    }
     switch(root->nodetype){
+        case CONNECTOR_NODE:
+            codegen(root->left);
+            codegen(root->right);
+            return -1;
         case NUM_NODE:{
             r1=getReg();
             fprintf(out,"MOV R%d,%d\n",r1,root->value.intval);
@@ -204,7 +184,11 @@ int codegen(struct tnode* root){
         }
         case MUL_NODE:{
             r1 = codegen(root->left);
+            //  // Protect left value
+            // fprintf(out, "PUSH R%d\n", r1);
             r2 = codegen(root->right);
+            // int r3 = getReg();
+            // fprintf(out, "POP R%d\n", r3);
             fprintf(out,"MUL R%d,R%d\n",r1,r2);
             freeReg();
             return r1;
@@ -217,14 +201,15 @@ int codegen(struct tnode* root){
             return r1;
         }
         case ASSIGN_NODE:{
-            r1=codegen(root->right);
-            r2=getMemoryAddress(root->left);
+            r1=codegen(root->right); //value in r1
+            r2=getMemoryAddress(root->left); //addr in r2
             fprintf(out,"MOV [R%d],R%d\n",r2,r1);
             freeReg();
             freeReg();
-            return r1;
+            return -1;
         }
         case WRITE_NODE:{
+            r1 = codegen(root->left); //evaluating before saving registers
             for (i = 0; i <= regno; i++)
                 fprintf(out, "PUSH R%d\n", i);
             status = regno;
@@ -234,10 +219,12 @@ int codegen(struct tnode* root){
             fprintf(out, "MOV R0,-2\n");
             fprintf(out, "PUSH R0\n"); //Argument 1
 
-            r1 = codegen(root->left);
-            fprintf(out, "PUSH R%d\n", r1); //Argument 2
+            
+            fprintf(out, "PUSH R%d\n", r1); //Argument 2 value to write
             freeReg();
-            fprintf(out, "ADD SP,2\n");
+            fprintf(out, "MOV R0,0\n");
+            fprintf(out, "PUSH R0\n"); //Argument 3
+            fprintf(out, "PUSH R0\n"); 
             fprintf(out, "CALL 0\n");
             fprintf(out, "SUB SP,5\n");
 
@@ -254,30 +241,29 @@ int codegen(struct tnode* root){
                 fprintf(out, "PUSH R%d\n", i);
             status = regno;
 
-            fprintf(out, "MOV R0,\"Read\"\n");
-            fprintf(out, "PUSH R0\n");
+            fprintf(out, "MOV R0,\"Read\"\n"); 
+            fprintf(out, "PUSH R0\n");//first push
 
             fprintf(out, "MOV R0,-1\n");
-            fprintf(out, "PUSH R0\n");
+            fprintf(out, "PUSH R0\n");//second push code -1
 
-            fprintf(out, "PUSH R%d\n", addr);
+            fprintf(out, "PUSH R%d\n", addr); //3 push address to read into
 
             fprintf(out, "MOV R0,-1\n");
-            fprintf(out, "PUSH R0\n");
-            fprintf(out, "PUSH R0\n");
+            fprintf(out, "PUSH R0\n"); //push 4
+            fprintf(out, "PUSH R0\n");//push 4
 
             fprintf(out, "CALL 0\n");
 
             // Pop syscall args
-            for (i = 0; i < 5; i++)
-                fprintf(out, "POP R0\n");
+            fprintf(out, "SUB SP,5\n");
 
             // Restore registers
             for (i = status; i >= 0; i--)
                 fprintf(out, "POP R%d\n", i);
-
-            freeReg();
             regno = status;
+            freeReg(); //freeing addr register
+            
             break;
         }
 
@@ -412,38 +398,40 @@ int codegen(struct tnode* root){
             fprintf(out, "PUSH R0\n"); //Space for return value
             fprintf(out, "CALL F%d\n", root->Gentry->flabel);
 
-            // Get return value
-            int retReg = getReg();
-            fprintf(out, "POP R%d\n", retReg);
-
+             // Pop return value
+            regno = status; // temporarily restore so getReg gives status+1
+            int finalReg = getReg(); // R(status+1)
+            fprintf(out, "POP R%d\n", finalReg); // pop return value
             // Pop arguments
             popArguments(root->argList);
+            
 
             // Restore registers
             for (i = status; i >= 0; i--)
                 fprintf(out, "POP R%d\n", i);
 
-            regno = status;
-
-            return retReg;
+            return finalReg;
         case RET_NODE:
             
             r2 = codegen(root->left);
             r1 = getReg();
             fprintf(out, "MOV R%d,BP\n", r1);
-            fprintf(out, "ADD R%d,%d\n", r1, -2);
+            fprintf(out, "SUB R%d,%d\n", r1, 2);
             fprintf(out, "MOV [R%d], R%d\n", r1, r2);
             freeReg();
             freeReg();
 
             Ltemp = Lhead;
-            while(Ltemp != NULL) {
-                if(Ltemp->binding > 0)
-                    fprintf(out, "POP R0\n");
-                Ltemp = Ltemp->next;
-            }
+            // while(Ltemp != NULL) {
+            //     if(Ltemp->binding > 0)
+            //         fprintf(out, "POP R0\n");
+            //     Ltemp = Ltemp->next;
+            // }
 
-            fprintf(out, "POP BP\n");
+            // fprintf(out, "POP BP\n");
+            // fprintf(out, "RET\n");
+            fprintf(out, "MOV SP, BP\n");   // deallocate all locals at once
+            fprintf(out, "POP BP\n");       // restore caller's BP
             fprintf(out, "RET\n");
             break;
 

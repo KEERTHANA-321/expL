@@ -55,8 +55,8 @@ Program : GDeclBlock FDefBlock MainBlock
       }
         | MainBlock {fclose(out);}
         ;
-GDeclBlock : DECL GDeclList ENDDECL {initialize();}
-            | DECL ENDDECL {initialize();}
+GDeclBlock : DECL GDeclList ENDDECL 
+            | DECL ENDDECL 
             ;
 GDeclList : GDeclList GDecl 
             | GDecl
@@ -240,6 +240,7 @@ MainBlock : T_INT MAIN LPAREN RPAREN LBRACE LDeclBlock Body RBRACE {
     }
 
     codegen($7);
+    generateExitCode();
     Lhead = NULL;
     Ltail = NULL;
     }
@@ -309,9 +310,15 @@ ContStmt: CONT SEMI {
     $$ = createTree(NONE, NULL,CONT_NODE, NULL, NULL, NULL, NULL, NULL);
 }
         ;
-repeatUntilStmt: REPEAT Slist UNTIL LPAREN expr RPAREN SEMI
+repeatUntilStmt: REPEAT Slist UNTIL LPAREN expr RPAREN SEMI {
+    typecheck($5->type, BOOL, 'r');
+    $$ = createTree(NONE, NULL, REPEAT_NODE, NULL, NULL, $2, $5, NULL);
+}
     ;
-doWhileStmt: DO Slist WHILE LPAREN expr RPAREN SEMI
+doWhileStmt: DO Slist WHILE LPAREN expr RPAREN SEMI {
+    typecheck($5->type, BOOL, 'd');
+    $$ = createTree(NONE, NULL, DOWHILE_NODE, NULL, NULL, $2, $5, NULL);
+}
     ;
 //expressions
 expr : expr PLUS expr {
@@ -458,6 +465,7 @@ int main(int argc, char *argv[]) {
     }
 
     initSymbolTables();
+    initialize(); 
     yyin = source_file;
     return yyparse();
 }
