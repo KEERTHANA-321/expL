@@ -1,0 +1,29 @@
+decl
+    int func(int a, int b, int c);
+enddecl
+
+int func(int a, int b, int c) {
+    decl
+        int d;
+    enddecl
+
+    begin
+        d = 20;
+        write(a);
+        write(b);
+        write(c);
+        write(d);
+
+        return 0;
+    end
+}
+
+int main() {
+    decl
+        int x;
+    enddecl
+    begin
+        x = func(1, 2, 3);
+        return 0;
+    end
+}

@@ -1,0 +1,13 @@
+decl
+int a;
+enddecl
+
+int main() {
+    decl
+    int a;
+    enddecl
+    begin
+        a = 5;
+        return a;
+    end
+}
