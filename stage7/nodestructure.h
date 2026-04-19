@@ -1,0 +1,40 @@
+#ifndef NODESTRUCTURE_H
+#define NODESTRUCTURE_H
+
+union Constant{
+    int intval;
+    char* strval;
+};
+
+typedef struct tnode { 
+	union Constant value;	// value of a constant
+	struct Typetable *type;	//type of variable NUM or STR
+	char* varname;	//name of a variable for ID nodes  
+	int nodetype;  // information about non-leaf nodes - read/write/connector/+/* etc.  
+	struct Gsymbol *Gentry;
+	struct Lsymbol *Lentry;
+	struct tnode * argList; //argumentss given if it is a function
+	struct tnode *left,*right,*middle;	//left and right branches   
+	struct Classtable *Ctype;
+}tnode;
+
+/*Create a node tnode*/
+struct tnode* createTree(struct Typetable *type, union Constant *value, int nodetype, char* name,struct tnode * argList, struct tnode *l, struct tnode *r, struct tnode *mid);// struct tnode* createNode();
+void print(struct tnode *root);
+void print_tree(struct tnode *root, char *prefix, int isLast);
+struct tnode* insertFieldId(struct tnode *field, struct tnode *id);
+
+//evaluating tree
+struct tnode* reverseList(struct tnode* t);
+int codegen(struct tnode* root);
+void printArgs(struct tnode *arg, char *prefix, int isLast);
+
+//codegen
+
+int generateFunctionCallCode(struct tnode* root);
+void getArgRegs(struct tnode* arglistnode,int *ind, int * argRegs);
+
+extern struct tnode* tempTNode;
+
+
+#endif
